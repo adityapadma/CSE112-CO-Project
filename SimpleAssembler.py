@@ -15,3 +15,44 @@ variable = {}
 label = {}
 machineCodes = []
 programCounter = 0
+
+
+
+
+inst0=[i.split() for i in sys.stdin.readlines()]
+
+instructions=inst0.copy()
+inst=[]
+for i in instructions:
+    if i:
+        inst.append(i)
+
+
+if len(inst)>256:                 
+    print("Memory Overflow")
+    error=1
+
+for i in variable:
+    if(not check(i)):
+        print("Line",i+1,"Invalid variable definition")
+        error=1
+    
+for i in label:
+    if(not check(i)):
+        print("Line",i+1,"Invalid label definition")
+        error=1
+
+inst = variables(inst)
+if error == 0 :
+    inst = labels(inst)
+
+
+for i in variable:
+    if(not check(i)):
+        print("Line",int(variable[i])-len(inst)+1,"Invalid variable definition")
+        error=1
+    
+for i in label:
+    if(not check(i)) and error==0:
+        print("Line",int(label[i])+1+len(variable),"Invalid label definition")
+        error=1
