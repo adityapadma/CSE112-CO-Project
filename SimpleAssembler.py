@@ -89,7 +89,125 @@ def variables(inst):
         variable[name] = count
         count+=1
     return ans
-               
+def labels(inst):
+    ans = []
+    for i in range(len(inst)):
+        if inst[i][0][-1] == ':' :
+            if(len(inst[i]) == 1):
+                global error
+                error = 1
+                print("line" , i+1+len(variable) , ": label points to empty line")
+                return
+            if(againl(inst[i][0][:-1])):
+                error=1
+                print("line" , i+1+len(variable) , "Label name used again")
+
+                return
+            label[ inst[i][0][:-1]] = i
+            ans.append(inst[i][1:])
+        else :
+            ans.append(inst[i])
+    return ans
+
+def typeA(lst,i):
+    if(len(lst)!=4):
+        print("line",len(variable)+i+1,": Wrong number of arguments for the instruction")
+        global error
+        error=1
+        return
+    if (lst[1] not in reg) or (lst[2] not in reg) or (lst[3] not in reg):
+        print("line" ,len(variable)+i+1+spaceCounter(lst) , ": Wrong register name")
+        error  = 1
+        return
+     
+    machineCodes.append(opcode['A'][lst[0]]+'00'+reg[lst[1]]+reg[lst[2]]+reg[lst[3]])
+
+def typeB(lst,i):
+    if len(lst)!=3:
+        print("line",len(variable)+i+1,":  Wrong number of arguments in instruction")
+        global error
+        error=1
+        return
+    if (lst[1] not in reg):
+        print("line" ,len(variable)+i+1 , ": Wrong register name")
+        error  = 1
+        return 
+    if lst[2][0] != '$':
+        print("line" ,len(variable)+i+1 , ": General error")
+        error  = 1
+        return 
+    for k in lst[2][1:] :
+        if k not in "0123456789":
+            print("line" ,len(variable)+i+1 , ": Immediate Value non integral")
+            error = 1
+            return 
+    if (int(lst[2][1:] )<0 or int(lst[2][1:])>255):
+        print("line",len(variable)+i+1,": Overflow of immediate value")
+        error=1
+        return
+    
+    b =  binaryConv(lst[2][1:])  
+    machineCodes.append(opcode['B'][lst[0]] + reg[lst[1]] + binaryConv(lst[2][1:])) #binary conversion left
+
+def typeC(lst,i):  
+    if len(lst) != 3:
+        print("line",len(variable)+i+1,": Wrong number of arguments in instruction")
+        global error
+        error=1
+        return   
+
+    if lst[0] == "mov" :
+        if (lst[1] not in reg and lst[1] != "FLAGS") or (lst[2] not in reg):
+            print("line" ,len(variable)+i+1 , ": Wrong register name")
+            error  = 1
+            return
+        else:
+            machineCodes.append(opcode['C'][lst[0]] + '00000' + "111" + reg[lst[2]] )
+            return
+            
+    else:
+        if (lst[1] not in reg) or (lst[2] not in reg):
+            print("line" ,len(variable)+i+1 , ": Wrong register name")
+            error  = 1
+            return
+    machineCodes.append(opcode['C'][lst[0]] + '00000' + reg[lst[1]] + reg[lst[2]] )
+
+def typeD(lst , i):
+    if lst[1] not in reg:
+        global error
+        print("line" ,len(variable)+i+1 , ": Wrong register name")
+        error  = 1
+        return 
+    
+    if lst[2] not in variable :
+        if lst[2] in label :
+            print("line" ,len(variable)+i+1 , ": usage of label as a variable")
+            error  = 1  # error -> misuse of label
+            return 
+        error = 1
+        print("line" ,len(variable)+i+1 , ": variable doen't exist")
+        return  # error -> variable not defined
+    machineCodes.append(opcode['D'][lst[0]] + reg[lst[1]] + binaryConv(variable[lst[2]]))
+    
+def typeE(lst,i):
+    if lst[1] not in label :
+        
+        if lst[1] in variable :
+            print("line" ,len(variable)+i+1 , ": usage of variable as a label")
+            global error
+            error  = 1 
+            return  # error -> misuse of variable
+        else:
+            print("line" ,len(variable)+i+1 , ": label doesn't exist")
+            error  = 1 
+            return  # error -> lable not defined
+    
+    machineCodes.append(opcode['E'][lst[0]] +"000"+ binaryConv(label[lst[1]]) )
+     
+def typeF(lst,i):
+    machineCodes.append(opcode['F'][lst[0]] + '00000000000')
+
+
 
 inst0=[i.split() for i in sys.stdin.readlines()]
 
