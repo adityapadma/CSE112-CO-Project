@@ -17,7 +17,79 @@ machineCodes = []
 programCounter = 0
 
 
+def check(ch): 
+    istrue=True
+    if ch[0].isdigit():
+        istrue=False
+    if istrue:
+        for x in ch:
+            if x not in "123456789qwertyuioplkjhgfdsazxcvbnmQWERTYUIOPLKJHGFDSAZXCVBNM_":
+                istrue=False
+    if istrue:
+        for key in opcode:
+            if (ch in opcode[key]):
+                istrue=False
+    if istrue:
+        if ch in reg:
+            istrue=False
+    return istrue                                                      
 
+
+def spaceCounter(lst):
+    count = 0
+    for i in  inst0 :
+        if i == lst :
+            return count
+        elif i == []:
+            count+=1
+    return count
+
+def binaryConv(k):
+    k = int(k)
+    return format(k, '08b')
+
+def againv(ch):
+    if ch in variable:
+        return True
+    return False 
+
+def againl(ch):
+    if ch in label:
+        return True
+    return False
+
+def variables(inst):
+    count = 0 
+    ans = []
+    flag = 0
+    for i in range(len(inst)):
+            if inst[i][0]=='var' and len(inst[i]) !=2:
+                global error
+                error = 1
+                print("line" , i+1+spaceCounter(inst[i]), "Wrong number of arguments")
+                return
+            
+            if(inst[i][0] =="var" and againv(inst[i][1])):
+                error=1
+                # print(inst[i])
+                print("line" , i+1+spaceCounter(inst[i]) , "Variable name used again")
+                return
+            
+            if(inst[i][0]=='var') and flag == 0:
+                variable[inst[i][1]] = ""
+            elif(inst[i][0]=='var') and flag == 1:
+                error = 1
+                print("line " , i+1+spaceCounter(inst[i]) , " :variable declared after instructions")
+                return
+            else:
+                ans.append(inst[i])
+                count+=1
+                flag = 1
+    for name in variable :
+        variable[name] = count
+        count+=1
+    return ans
+               
 
 inst0=[i.split() for i in sys.stdin.readlines()]
 
