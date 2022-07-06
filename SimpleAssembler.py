@@ -34,15 +34,27 @@ def check(ch):
             istrue=False
     return istrue                                                      
 
+def spaceCounter(lst , checker = 0):
+    if checker == 0:
+        count = 0
+        for i in  inst0 :
+            if i == lst :
+                return count
+            elif i == []:
+                count+=1
+        return count
+    else:
+        count = 0
+        check = 0
+        for i in  inst0 :
+            if check == 2:
+                break
+            if i == lst and check<2:
+                check+=1
+            elif i == []:
+                count+=1
+        return count
 
-def spaceCounter(lst):
-    count = 0
-    for i in  inst0 :
-        if i == lst :
-            return count
-        elif i == []:
-            count+=1
-    return count
 
 def binaryConv(k):
     k = int(k)
