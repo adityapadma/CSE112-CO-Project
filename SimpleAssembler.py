@@ -218,8 +218,7 @@ def typeE(lst,i):
 def typeF(lst,i):
     machineCodes.append(opcode['F'][lst[0]] + '00000000000')
 
-with open("testCase.txt" , "r" ) as f:
-    inst0=[i.split() for i in f.readlines()]
+inst0=[i.split() for i in sys.stdin.readlines()]
 
 instructions=inst0.copy()
 inst=[]
