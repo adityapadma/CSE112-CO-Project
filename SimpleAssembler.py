@@ -8,14 +8,13 @@ opcode = {
 "D" : {"ld" : "10100" , "st" : "10101"},
 "E" : {"jmp" : "11111" , "jlt" : "01100" , "jgt" : "01101" , "je" : "01111"},
 "F" : {"hlt" : "01010"} 
-}                  
+}
 
 error = 0 
 variable = {}
 label = {}
 machineCodes = []
-programCounter = 0
-
+programCounter = 0 
 
 def check(ch): 
     istrue=True
@@ -23,7 +22,7 @@ def check(ch):
         istrue=False
     if istrue:
         for x in ch:
-            if x not in "123456789qwertyuioplkjhgfdsazxcvbnmQWERTYUIOPLKJHGFDSAZXCVBNM_":
+            if x not in "0123456789qwertyuioplkjhgfdsazxcvbnmQWERTYUIOPLKJHGFDSAZXCVBNM_":
                 istrue=False
     if istrue:
         for key in opcode:
@@ -33,6 +32,7 @@ def check(ch):
         if ch in reg:
             istrue=False
     return istrue                                                      
+
 
 def spaceCounter(lst , checker = 0):
     if checker == 0:
@@ -45,7 +45,7 @@ def spaceCounter(lst , checker = 0):
         return count
     else:
         count = 0
-        check = 0
+        check = 0 
         for i in  inst0 :
             if check == 2:
                 break
@@ -54,6 +54,7 @@ def spaceCounter(lst , checker = 0):
             elif i == []:
                 count+=1
         return count
+
 
 
 def binaryConv(k):
@@ -83,8 +84,7 @@ def variables(inst):
             
             if(inst[i][0] =="var" and againv(inst[i][1])):
                 error=1
-                # print(inst[i])
-                print("line" , i+1+spaceCounter(inst[i]) , "Variable name used again")
+                print("line" , i+1+spaceCounter(inst[i] , 1) , "Variable name used again")
                 return
             
             if(inst[i][0]=='var') and flag == 0:
@@ -100,7 +100,8 @@ def variables(inst):
     for name in variable :
         variable[name] = count
         count+=1
-    return ans
+    return ans 
+                
 def labels(inst):
     ans = []
     for i in range(len(inst)):
@@ -108,11 +109,11 @@ def labels(inst):
             if(len(inst[i]) == 1):
                 global error
                 error = 1
-                print("line" , i+1+len(variable) , ": label points to empty line")
+                print("line" , i+1+len(variable)+spaceCounter(inst[i]) , ": label points to empty line")
                 return
             if(againl(inst[i][0][:-1])):
                 error=1
-                print("line" , i+1+len(variable) , "Label name used again")
+                print("line" , i+1+len(variable)+spaceCounter(inst[i],1) , "Label name used again")
 
                 return
             label[ inst[i][0][:-1]] = i
@@ -123,7 +124,7 @@ def labels(inst):
 
 def typeA(lst,i):
     if(len(lst)!=4):
-        print("line",len(variable)+i+1,": Wrong number of arguments for the instruction")
+        print("line",len(variable)+i+1+spaceCounter(inst[i]),": Wrong number of arguments for the instruction")
         global error
         error=1
         return
@@ -136,92 +137,89 @@ def typeA(lst,i):
 
 def typeB(lst,i):
     if len(lst)!=3:
-        print("line",len(variable)+i+1,":  Wrong number of arguments in instruction")
+        print("line",len(variable)+i+1+spaceCounter(inst[i]),":  Wrong number of arguments in instruction")
         global error
         error=1
         return
     if (lst[1] not in reg):
-        print("line" ,len(variable)+i+1 , ": Wrong register name")
+        print("line" ,len(variable)+i+1+spaceCounter(inst[i]) , ": Wrong register name")
         error  = 1
         return 
     if lst[2][0] != '$':
-        print("line" ,len(variable)+i+1 , ": General error")
+        print("line" ,len(variable)+i+1+spaceCounter(inst[i]) , ": General error")
         error  = 1
         return 
     for k in lst[2][1:] :
         if k not in "0123456789":
-            print("line" ,len(variable)+i+1 , ": Immediate Value non integral")
+            print("line" ,len(variable)+i+1+spaceCounter(inst[i]) , ": Immediate Value non integral")
             error = 1
             return 
     if (int(lst[2][1:] )<0 or int(lst[2][1:])>255):
-        print("line",len(variable)+i+1,": Overflow of immediate value")
+        print("line",len(variable)+i+1+spaceCounter(inst[i]),": Overflow of immediate value")
         error=1
         return
     
     b =  binaryConv(lst[2][1:])  
-    machineCodes.append(opcode['B'][lst[0]] + reg[lst[1]] + binaryConv(lst[2][1:])) #binary conversion left
+    machineCodes.append(opcode['B'][lst[0]] + reg[lst[1]] + binaryConv(lst[2][1:])) 
 
 def typeC(lst,i):  
     if len(lst) != 3:
-        print("line",len(variable)+i+1,": Wrong number of arguments in instruction")
+        print("line",len(variable)+i+1+spaceCounter(inst[i]),": Wrong number of arguments in instruction")
         global error
         error=1
         return   
 
     if lst[0] == "mov" :
-        if (lst[1] not in reg and lst[1] != "FLAGS") or (lst[2] not in reg):
-            print("line" ,len(variable)+i+1 , ": Wrong register name")
+        if (lst[1] not in reg and lst[1] != "FLAGS") or lst[2] not in reg:
+            print("line" ,len(variable)+i+1+spaceCounter(inst[i]) , ": Wrong register name")
             error  = 1
             return
-        else:
+        elif(lst[1] == "FLAGS"):
             machineCodes.append(opcode['C'][lst[0]] + '00000' + "111" + reg[lst[2]] )
             return
-            
-    else:
-        if (lst[1] not in reg) or (lst[2] not in reg):
-            print("line" ,len(variable)+i+1 , ": Wrong register name")
-            error  = 1
-            return
+    if (lst[1] not in reg) or (lst[2] not in reg):
+        print("line" ,len(variable)+i+1+spaceCounter(inst[i]) , ": Wrong register name")
+        error  = 1  
+        return  
     machineCodes.append(opcode['C'][lst[0]] + '00000' + reg[lst[1]] + reg[lst[2]] )
 
 def typeD(lst , i):
     if lst[1] not in reg:
         global error
-        print("line" ,len(variable)+i+1 , ": Wrong register name")
+        print("line" ,len(variable)+i+1+spaceCounter(inst[i]) , ": Wrong register name")
         error  = 1
         return 
     
     if lst[2] not in variable :
         if lst[2] in label :
-            print("line" ,len(variable)+i+1 , ": usage of label as a variable")
-            error  = 1  # error -> misuse of label
+            print("line" ,len(variable)+i+1+spaceCounter(inst[i]) , ": usage of label as a variable")
+            error  = 1  
             return 
         error = 1
-        print("line" ,len(variable)+i+1 , ": variable doen't exist")
-        return  # error -> variable not defined
+        print("line" ,len(variable)+i+1+spaceCounter(inst[i]) , ": variable doen't exist")
+        return  
     machineCodes.append(opcode['D'][lst[0]] + reg[lst[1]] + binaryConv(variable[lst[2]]))
     
 def typeE(lst,i):
     if lst[1] not in label :
         
         if lst[1] in variable :
-            print("line" ,len(variable)+i+1 , ": usage of variable as a label")
+            print("line" ,len(variable)+i+1+spaceCounter(inst[i]) , ": usage of variable as a label")
             global error
             error  = 1 
-            return  # error -> misuse of variable
+            return 
         else:
-            print("line" ,len(variable)+i+1 , ": label doesn't exist")
+            print("line" ,len(variable)+i+1+spaceCounter(inst[i]), ": label doesn't exist")
             error  = 1 
-            return  # error -> lable not defined
+            return  
     
     machineCodes.append(opcode['E'][lst[0]] +"000"+ binaryConv(label[lst[1]]) )
      
 def typeF(lst,i):
     machineCodes.append(opcode['F'][lst[0]] + '00000000000')
 
-
-
-inst0=[i.split() for i in sys.stdin.readlines()]
+with open("testCase.txt" , "r" ) as f:
+    inst0=[i.split() for i in f.readlines()]
 
 instructions=inst0.copy()
 inst=[]
@@ -236,12 +234,11 @@ if len(inst)>256:
 
 for i in variable:
     if(not check(i)):
-        print("Line",i+1,"Invalid variable definition")
+        print("Line",i+1+spaceCounter(inst[i]),"Invalid variable definition")
         error=1
-    
 for i in label:
     if(not check(i)):
-        print("Line",i+1,"Invalid label definition")
+        print("Line",i+1+spaceCounter(inst[i]),"Invalid label definition")
         error=1
 
 inst = variables(inst)
@@ -251,22 +248,23 @@ if error == 0 :
 
 for i in variable:
     if(not check(i)):
-        print("Line",int(variable[i])-len(inst)+1,"Invalid variable definition")
+        print("Line",int(variable[i])-len(inst)+1+spaceCounter(inst[i]),"Invalid variable definition")
         error=1
     
 for i in label:
     if(not check(i)) and error==0:
-        print("Line",int(label[i])+1+len(variable),"Invalid label definition")
-        error=1
-      
+        print("Line",int(label[i])+1+len(variable)+spaceCounter(inst[i]),"Invalid label definition")
+        error=1 
+
+
 if(error == 0):
     for i in range(len(inst)-1):
         if inst[i]==['hlt']:
             error=1
-            print("Line",i+len(variable)+1,"hlt called before other instructions")
+            print("Line",i+len(variable)+1+spaceCounter(inst[i]),"hlt called before other instructions")
     if inst[-1]!=['hlt']:
         error=1
-        print("Line",len(inst)+len(variable),"Last instruction not hlt")
+        print("Line",len(inst)+len(variable)+spaceCounter(inst[i]),"Last instruction not hlt")
 if(error == 0):
     for i in range(len(inst)):
         ispresent=False 
@@ -275,7 +273,7 @@ if(error == 0):
                 ispresent=True
                 break
         if not ispresent:
-            print("Line",i+1+len(variable),"Wrong Instruction Name")
+            print("Line",i+1+len(variable)+spaceCounter(inst[i]),"Wrong Instruction Name")
             error = 1
             break
         if error == 0 :
@@ -303,4 +301,4 @@ if(error == 0):
             break
     if error == 0 :
         for codes in machineCodes:
-            print(codes)  
+            print(codes)
