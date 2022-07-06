@@ -263,7 +263,7 @@ if(error == 0):
             print("Line",i+len(variable)+1+spaceCounter(inst[i]),"hlt called before other instructions")
     if inst[-1]!=['hlt']:
         error=1
-        print("Line",len(inst)+len(variable)+spaceCounter(inst[i]),"Last instruction not hlt")
+        print("Line",len(inst)+len(variable)+spaceCounter(inst[-1]),"Last instruction not hlt")
 if(error == 0):
     for i in range(len(inst)):
         ispresent=False 
