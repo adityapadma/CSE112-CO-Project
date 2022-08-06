@@ -1,9 +1,10 @@
 import sys
 reg={"R0" : "000" ,"R1":"001","R2":"010","R3":"011","R4":"100","R5":"101","R6":"110"}
 
+
 opcode = {
-"A" : {"add" : "10000" , "sub" : "10001" , "mul" : "10110" , "xor" : "11010" , "and" : "11100", "or":"11011"}, 
-"B" : {"mov" : "10010" , "ls" : "11001","rs":"11000"}, 
+"A" : {"add" : "10000" , "sub" : "10001" , "mul" : "10110" , "xor" : "11010" , "and" : "11100", "or":"11011" , "addf" : "00000" , "subf" : "00001"}, 
+"B" : {"mov" : "10010" , "ls" : "11001","rs":"11000" , "movf" : "00010"}, 
 "C" : {"mov" : "10011"  ,"div" : "10111" , "not" : "11101" , "cmp" : "11110"},
 "D" : {"ld" : "10100" , "st" : "10101"},
 "E" : {"jmp" : "11111" , "jlt" : "01100" , "jgt" : "01101" , "je" : "01111"},
@@ -15,6 +16,36 @@ variable = {}
 label = {}
 machineCodes = []
 programCounter = 0 
+
+def binaryConvExponent(k):
+    exponent = 0
+    s="00000000"
+    if "." in k:
+        k = (float)(k)
+        while(k / 2 > 1) :
+            exponent += 1
+            k = k / 2
+        x = k - int(k)
+        if(exponent>7 or exponent==0):
+            global error
+            error = 1
+            return
+        s += format(exponent,'03b')
+        while(x - int(x) !=0) :
+            x *= 2
+            s += str(int(x))
+            x= x - int(x)
+        if len(s)>16:
+            error = 1
+            return 
+
+        for i in range(16-len(s)):
+            s += '0'
+        return s
+    else:
+        k = (int)(k)
+        return format(k, '016b')
+
 
 def check(ch): 
     istrue=True
@@ -54,8 +85,6 @@ def spaceCounter(lst , checker = 0):
             elif i == []:
                 count+=1
         return count
-
-
 
 def binaryConv(k):
     k = int(k)
@@ -132,10 +161,9 @@ def typeA(lst,i):
         print("line" ,len(variable)+i+1+spaceCounter(lst) , ": Wrong register name")
         error  = 1
         return
-     
     machineCodes.append(opcode['A'][lst[0]]+'00'+reg[lst[1]]+reg[lst[2]]+reg[lst[3]])
 
-def typeB(lst,i):
+def typeB(lst,i , check = 0):
     if len(lst)!=3:
         print("line",len(variable)+i+1+spaceCounter(inst[i]),":  Wrong number of arguments in instruction")
         global error
@@ -149,17 +177,45 @@ def typeB(lst,i):
         print("line" ,len(variable)+i+1+spaceCounter(inst[i]) , ": General error")
         error  = 1
         return 
+    
+    if(check == 1):
+        checkerr = 0
+        for k in lst[2][1:] :
+            if k == ".":
+                checkerr = 1
+    
+        if checkerr == 0:
+            print("line" ,len(variable)+i+1+spaceCounter(inst[i]) , ": decimal point not present")
+
+            error = 1
+            return
+
+
     for k in lst[2][1:] :
-        if k not in "0123456789":
+        if k not in "0123456789.":
             print("line" ,len(variable)+i+1+spaceCounter(inst[i]) , ": Immediate Value non integral")
             error = 1
-            return 
+            return
+     
+    isFloat = 0
+    for k in  lst[2][1:] :
+        if k == '.':
+            isFloat = 1
+            binaryConvExponent(lst[2][1:])
+            if(error == 1):
+                print("line" ,len(variable)+i+1+spaceCounter(inst[i]) , ": Number not possible to show in given representation")
+                return
+            break
+    if(isFloat == 1):
+        machineCodes.append(opcode['B'][lst[0]] + reg[lst[1]] + binaryConvExponent(lst[2][1:]))
+        return 
+
     if (int(lst[2][1:] )<0 or int(lst[2][1:])>255):
         print("line",len(variable)+i+1+spaceCounter(inst[i]),": Overflow of immediate value")
         error=1
         return
-    
-    b =  binaryConv(lst[2][1:])  
+
+    b =  binaryConv(lst[2][1:])
     machineCodes.append(opcode['B'][lst[0]] + reg[lst[1]] + binaryConv(lst[2][1:])) 
 
 def typeC(lst,i):  
@@ -218,7 +274,9 @@ def typeE(lst,i):
 def typeF(lst,i):
     machineCodes.append(opcode['F'][lst[0]] + '00000000000')
 
-inst0=[i.split() for i in sys.stdin.readlines()]
+# f=open("testCase.txt","r")
+# inst0 = [i.split() for i in f.readlines()]
+inst0 = [i.split() for i in sys.stdin.readlines()]
 
 instructions=inst0.copy()
 inst=[]
@@ -263,7 +321,7 @@ if(error == 0):
             print("Line",i+len(variable)+1+spaceCounter(inst[i]),"hlt called before other instructions")
     if inst[-1]!=['hlt']:
         error=1
-        print("Line",len(inst)+len(variable)+spaceCounter(inst[-1]),"Last instruction not hlt")
+        print("Line",len(inst)+len(variable)+spaceCounter(inst[i]),"Last instruction not hlt")
 if(error == 0):
     for i in range(len(inst)):
         ispresent=False 
@@ -287,7 +345,10 @@ if(error == 0):
                         if key=='A':
                             typeA(inst[i],i)
                         elif key=='B':
-                            typeB(inst[i],i)
+                            if inst[i][0] == "movf":
+                                typeB(inst[i],i , 1)
+                            else:
+                                typeB(inst[i],i)
                         elif key=='C':
                             typeC(inst[i],i)
                         elif key=='D':
@@ -300,4 +361,4 @@ if(error == 0):
             break
     if error == 0 :
         for codes in machineCodes:
-            print(codes)
+            print(codes)  
