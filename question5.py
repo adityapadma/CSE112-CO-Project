@@ -1,4 +1,4 @@
-memoryDict = {"k" : "10" ,"K" : "10", "g" : "30", "G" : "30" , "b" : "-3" , "B" : "0" , "Word" : "" , "m" : "20","M" : "20"}
+memoryDict = {"k" : "11" ,"K" : "10", "g" : "30", "G" : "30" , "b" : "-3" , "B" : "0" , "Word" : "" , "m" : "20","M" : "20"}
 optionsMemory = "\nChoose one of the type of Addressable Memory :\n1. Bit Addressable Memory \n2. Nibble Addressable Memory\n3. Byte Addressable Memory\n4. Word Addressable Memory\n"
 
 option =  int(input("\nChoose which question to solve :\n1. ISA and Instructions related\n2. Main memory size\n"))
@@ -82,8 +82,8 @@ else:
         print("Number of pins saved :" , memoryType1 - memoryType2)
 
     elif part==2:
-        cpuBits = int(input("Enter number of bits the cpu is : "))
-        pins = int(input("enter number of pins :"))
+        cpuBits = int(input("Enter number of bits of the CPU is : "))
+        pins = int(input("Enter number of pins \t\t   : "))
         memoryType2 = int(input(optionsMemory))
         if memoryType2 == 1:
             memoryType2 = -3
@@ -103,6 +103,3 @@ else:
             print("Main memory size -> " , (2**(totalmemory-20)) , "mB")
         elif (totalmemory>=10):
             print("Main memory size -> " , (2**(totalmemory-10)) , "kB")
-        elif (totalmemory>=cpuBits):
-            print("Main memory size -> " , (2**(totalmemory-10)) , "kB")
-            
