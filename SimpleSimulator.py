@@ -1,5 +1,4 @@
-import matplotlib.pyplot as plt
-import sys
+# import matplotlib.pyplot as plt
 
 regval={"000":0,"001":0,"010":0,"011":0,"100":0,"101":0,"110":0,"111":0}
 
@@ -80,7 +79,7 @@ def typeA(opc,reg1,reg2,reg3):
     elif opc == opcode["A"]["or"]:
         regval[reg3] = regval[reg1] | regval[reg2]
     elif opc == opcode["A"]["addf"]:
-        x = regval[reg1] + regval[reg2]
+        x = regval[reg1] + regval[reg2] 
         if x > 252:
             if flags[-4] != "1":
                 flags[-4] = "1"
@@ -179,8 +178,7 @@ def typeE(opc,mem_addr):
         else:
             return -1
 
-# f = open("testCase.txt","r")
-# inst0 = f.read().splitlines()
+import sys
 
 inst0=sys.stdin.read().splitlines()
 
@@ -205,7 +203,7 @@ cycle=0
 
 while(inst[pc]!="0101000000000000"):
     comm=inst[pc]
-    plt.plot(cycle,pc,'bo')
+    # plt.plot(cycle,pc,'bo')
     opc = comm[:5]
     if opc in opcode["A"].values():
         flags =["0"]*16
@@ -223,7 +221,7 @@ while(inst[pc]!="0101000000000000"):
         pc+=1
     elif opc in opcode["D"].values():
         flags =["0"]*16
-        plt.plot(cycle,binaryToDecimal(comm[8:16]),'bo')
+        # plt.plot(cycle,binaryToDecimal(comm[8:16]),'bo')
         typeD( opc , comm[5:8] , comm[8:16])
         printt()
         pc+=1
@@ -236,17 +234,12 @@ while(inst[pc]!="0101000000000000"):
             printt()
             pc+=1
     cycle += 1
+flags =["0"]*16
 printt()
 
-plt.plot(cycle,pc,'bo')
+# plt.plot(cycle,pc,'bo')
 
 for i in memory:
     print(i)
 
-plt.show()
-
-
-    
-
-
-
+# plt.show()
